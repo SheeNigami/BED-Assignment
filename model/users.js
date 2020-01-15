@@ -30,14 +30,15 @@ const Users = {
             (?, ?, ?, ?);
             `;
             const userID = uuid();
-            bcrypt.genSalt(saltRounds, (err, salt) => {
-                bcrypt.hash(password, salt, (err, hashed) => {
-                    db.query(insertUserQuery, [userID, username, password, profilePicURL], (err, insertedInfo) => {
-                        if (err) {
-                            return reject(err);
-                        }
-                        resolve(userID);
-                    });
+            bcrypt.hash(password, saltRounds, (err, hashedPw) => {
+                if (err) {
+                    return reject(err);
+                }
+                db.query(insertUserQuery, [userID, username, hashedPw, profilePicURL], (err, insertedInfo) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(userID);
                 });
             });
         });
