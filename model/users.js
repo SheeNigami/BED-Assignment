@@ -72,11 +72,47 @@ const Users = {
 
             db.query(updateUserQuery, [username, profilePicURL, userID], (err) => {
                 if (err) {
-                    reject(err);
+                    return reject(err);
                 }
                 resolve(true);
             });
         });
+    },
+    verify: function(username, password) {
+        return new Promise((resolve, reject) => {
+            let verifyQuery = 
+            `
+            SELECT * FROM Users
+            WHERE
+            username = ? 
+            LIMIT 1;
+            `;
+
+            db.query(verifyQuery, (err, results) => {
+                if (err) {
+                   return reject(err);
+                } 
+                if (results.length == 0) {
+                   return reject();
+                }
+                resolve(results);
+            });
+        }).then(
+            function (results) {
+                return new Promise((resolve, reject) =>  {
+                    const user = results[0];
+                    bcrypt.compare(password, user.password, (err, compareResults) =>  {
+                        if (err) {
+                            return reject(err);
+                        }
+                        if (!compareResults) {
+                            return reject();
+                        }
+                        resolve(user);
+                    });
+                });
+            }.bind(this)
+        );
     }
 };
 
