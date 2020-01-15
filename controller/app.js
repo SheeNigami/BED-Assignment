@@ -165,7 +165,7 @@ app.post('/login/', (req, res, next) => {
                        user_id: user.id
                    });
                 });
-            })
+            });
         }.bind(this)
     ).then((token) => {
         res.status(200).send(token);
