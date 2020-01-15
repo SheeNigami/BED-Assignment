@@ -2,7 +2,10 @@
 var express = require('express');
 var app = express();
 
-// Middlewares
+// Packages
+var jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET;
+
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({extended: false});
 app.use(bodyParser.json());
@@ -143,7 +146,34 @@ app.post('/listings/:id/offers/', (req, res, next) => {
 
 // CA2
 
-// 
+// Login
+app.post('/login/', (req, res, next) => {
+    Users.verify(req.body.username, req.body.password).then(
+        function (user) {
+            return new Promise((resolve, reject) => {
+                if (user === null) {
+                    return reject();
+                }
+                
+                const payload = {user_id: user.id};
+                jwt.sign(payload, JWT_SECRET, { algorithm: "HS256" }, (error, token) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                   resolve({
+                       token: token,
+                       user_id: user.id
+                   });
+                });
+            })
+        }.bind(this)
+    ).then((token) => {
+        res.status(200).send(token);
+    }).catch((err) => {
+        console.log(err);
+        res.status(401).send();
+    });
+});
 
 // Bonus (Image upload/storage)
 
