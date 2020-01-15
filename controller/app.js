@@ -28,7 +28,7 @@ app.get('/users/', (req, res, next) => {
 
 // 2) Add new User
 app.post('/users/', (req, res, next) => {
-    Users.insertUser(req.body.username, req.body.profile_pic_url).then((insertedID) => {
+    Users.insertUser(req.body.username, req.body.password, req.body.profile_pic_url).then((insertedID) => {
         res.status(201).send({"UserID": insertedID});
     }).catch((err) => {
         console.log(err);
@@ -139,6 +139,11 @@ app.post('/listings/:id/offers/', (req, res, next) => {
         res.status(500).send();
     });
 });
+
+
+// CA2
+
+// 
 
 // Bonus (Image upload/storage)
 

@@ -1,6 +1,9 @@
 var db = require('./databaseConfig.js');
 var uuid = require('uuid/v4');
 
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 const Users = {
     getAllUsers: function() {
         return new Promise((resolve, reject) => {
@@ -17,21 +20,25 @@ const Users = {
             });
         });
     },
-    insertUser: function(username, profilePicURL) {
+    insertUser: function(username, password, profilePicURL) {
         return new Promise((resolve, reject) => {
             let insertUserQuery = 
             `
             INSERT INTO Users
-            (uuid, username, profile_pic_url)
+            (uuid, username, password, profile_pic_url)
             VALUES
-            (?, ?, ?);
+            (?, ?, ?, ?);
             `;
             const userID = uuid();
-            db.query(insertUserQuery, [userID, username, profilePicURL], (err, insertedInfo) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(userID);
+            bcrypt.genSalt(saltRounds, (err, salt) => {
+                bcrypt.hash(password, salt, (err, hashed) => {
+                    db.query(insertUserQuery, [userID, username, password, profilePicURL], (err, insertedInfo) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        resolve(userID);
+                    });
+                });
             });
         });
     },
