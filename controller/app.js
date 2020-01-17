@@ -157,8 +157,8 @@ app.post('/login/', (req, res, next) => {
                 
                 const payload = {user_id: user.id};
                 jwt.sign(payload, JWT_SECRET, { algorithm: "HS256" }, (error, token) => {
-                    if (err) {
-                        return reject(err);
+                    if (error) {
+                        return reject(error);
                     }
                    resolve({
                        token: token,
