@@ -11,6 +11,8 @@ var urlencodedParser = bodyParser.urlencoded({extended: false});
 app.use(bodyParser.json());
 app.use(urlencodedParser);
 
+//Middleware
+var isLoggedInMiddleware = require('../isLoggedInMiddleware.js');
 
 // Models 
 var Users = require('../model/users.js');
@@ -50,7 +52,7 @@ app.get('/users/:id/',  (req, res, next) => {
 });
 
 // 4) Update single User
-app.put('/users/:id/', (req, res, next) => {
+app.put('/users/:id/', isLoggedInMiddleware, (req, res, next) => {
     Users.updateUser(req.params.id, req.body.username, req.body.profile_pic_url).then(() => {
         res.status(204).send();
     }).catch((err) => {
@@ -94,7 +96,7 @@ app.get('/listings/:listing_id', (req, res, next) => {
 });
 
 // 8) Add a new Listing
-app.post('/listings/', (req, res, next) => {
+app.post('/listings/', isLoggedInMiddleware, (req, res, next) => {
     Listings.insertListing(req.body.title, req.body.description, parseFloat(req.body.price), req.body.fk_poster_id).then((insertedListingID) => {
         res.status(201).send({'listingID': insertedListingID});
     }).catch((err) => {
@@ -104,7 +106,7 @@ app.post('/listings/', (req, res, next) => {
 });
 
 // 9) Delete a particular Listing
-app.delete('listings/:id/', (req, res, next) => {
+app.delete('listings/:id/', isLoggedInMiddleware, (req, res, next) => {
     Listings.deleteListing(req.params.id).then(() => {
         res.status(204).send();
     }).catch((err) => {
@@ -114,7 +116,7 @@ app.delete('listings/:id/', (req, res, next) => {
 });
 
 // 10) Update a Listing
-app.put('/listings/:id/', (req, res, next) => {
+app.put('/listings/:id/', isLoggedInMiddleware, (req, res, next) => {
     Listings.updateListing(req.params.id, req.body.title, req.body.description, parseFloat(req.body.price), req.body.fk_poster_id).then(() => {
         res.status(204).send();
     }).catch((err) => {
@@ -124,7 +126,7 @@ app.put('/listings/:id/', (req, res, next) => {
 });
 
 // 11) Get all offer of a particular Listing
-app.get('/listings/:id/offers/', (req, res, next) => {
+app.get('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
     Offers.getListingOffers(req.params.id).then((allListingOffers) => {
         res.status(200).send(allListingOffers);
     }).catch((err) => {
@@ -134,7 +136,7 @@ app.get('/listings/:id/offers/', (req, res, next) => {
 });
 
 // 12) Inserts an offer for a particular Listing
-app.post('/listings/:id/offers/', (req, res, next) => {
+app.post('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
     Offers.insertOffer(req.params.id, parseFloat(req.body.offer), req.body.fk_offeror_id).then((offerID) => {
         res.status(201).send({"offerID": offerID});
     }).catch((err) => {
