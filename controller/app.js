@@ -228,6 +228,15 @@ app.post('/listings/:listing_id/single/', upload.single('product_img'), (req, re
 
 // Upload multiple imgs
 app.post('/listings/:listing_id/multi/', upload.array('product_imgs', 4), (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then((listing) => {
+        if(listing.uuid !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     try {
         res.send(req.files);
     } catch(err) {
@@ -237,6 +246,15 @@ app.post('/listings/:listing_id/multi/', upload.array('product_imgs', 4), (req, 
 
 // Get specific image
 app.get('/listings/:listing_id/images/:image_id/', (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then((listing) => {
+        if(listing.uuid !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     try {
         res.status(200).sendFile(req.params.listing_id + '/' + req.params.image_id + '.jpg', {root: './product_imgs'});
     } catch(err) {
@@ -308,7 +326,7 @@ app.post('/likes/', (req, res, next) => {
 // Deletes a Like (User unlikes a Listing)
 app.delete('/likes/:like_id/', (req, res, next) => {
     Likes.getLike(req.params.likeID).then((like) => {
-        const liker = like.fk_liker_id;
+        const liker = like[0].fk_liker_id;
         if(liker !== req.decodedToken.user_id) {
             res.status(403).send();
             return;
