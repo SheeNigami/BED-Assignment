@@ -102,7 +102,8 @@ app.get('/listings/:listing_id', (req, res, next) => {
 
 // 8) Add a new Listing
 app.post('/listings/', isLoggedInMiddleware, (req, res, next) => {
-    Listings.insertListing(req.body.title, req.body.description, parseFloat(req.body.price), req.body.fk_poster_id).then((insertedListingID) => {
+    const poster = req.decodedToken.user_id;
+    Listings.insertListing(req.body.title, req.body.description, parseFloat(req.body.price), poster).then((insertedListingID) => {
         res.status(201).send({'listingID': insertedListingID});
     }).catch((err) => {
         console.log(err);
@@ -112,6 +113,15 @@ app.post('/listings/', isLoggedInMiddleware, (req, res, next) => {
 
 // 9) Delete a particular Listing
 app.delete('listings/:id/', isLoggedInMiddleware, (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then( (listing) => {
+        if(listing.fk_seller_id !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     Listings.deleteListing(req.params.id).then(() => {
         res.status(204).send();
     }).catch((err) => {
@@ -122,6 +132,15 @@ app.delete('listings/:id/', isLoggedInMiddleware, (req, res, next) => {
 
 // 10) Update a Listing
 app.put('/listings/:id/', isLoggedInMiddleware, (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then( (listing) => {
+        if(listing.fk_seller_id !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     Listings.updateListing(req.params.id, req.body.title, req.body.description, parseFloat(req.body.price), req.body.fk_poster_id).then(() => {
         res.status(204).send();
     }).catch((err) => {
@@ -132,6 +151,17 @@ app.put('/listings/:id/', isLoggedInMiddleware, (req, res, next) => {
 
 // 11) Get all offer of a particular Listing
 app.get('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
+    Listings.getListing(req.params.id).then( (listing) => {
+        console.log(listing);
+        console.log(req.decodedToken);
+        if(listing.fk_seller_id !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     Offers.getListingOffers(req.params.id).then((allListingOffers) => {
         res.status(200).send(allListingOffers);
     }).catch((err) => {
@@ -142,7 +172,12 @@ app.get('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
 
 // 12) Inserts an offer for a particular Listing
 app.post('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
-    Offers.insertOffer(req.params.id, parseFloat(req.body.offer), req.body.fk_offeror_id).then((offerID) => {
+    let offeror = req.body.fk_offeror_id;
+    if (offeror !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
+    Offers.insertOffer(req.params.id, parseFloat(req.body.offer), offeror).then((offerID) => {
         res.status(201).send({"offerID": offerID});
     }).catch((err) => {
         console.log(err);
