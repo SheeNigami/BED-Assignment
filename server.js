@@ -6,5 +6,5 @@ var app = require('./controller/app.js');
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-    console.log("App hosted at localhost: " + port);
+    console.log("App hosted at localhost: " + PORT);
 });

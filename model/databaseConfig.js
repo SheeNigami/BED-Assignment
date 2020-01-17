@@ -7,8 +7,8 @@ const DB_NAME = process.env.DB_NAME;
 
 const connection = mysql.createConnection({
     host: DB_HOST, 
-    user: DB_USER,    //Change accordingly
-    password: DB_PASSWORD,    //Change accordingly
+    user: DB_USER,   
+    password: DB_PASSWORD,    
     database: DB_NAME    
 });
 
