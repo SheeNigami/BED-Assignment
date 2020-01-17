@@ -152,8 +152,6 @@ app.put('/listings/:id/', isLoggedInMiddleware, (req, res, next) => {
 // 11) Get all offer of a particular Listing
 app.get('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
     Listings.getListing(req.params.id).then( (listing) => {
-        console.log(listing);
-        console.log(req.decodedToken);
         if(listing.fk_seller_id !== req.decodedToken.user_id) {
             res.status(403).send();
             return;
@@ -271,6 +269,10 @@ app.get('/likes/:likeID', (req, res, next) => {
 
 // Gets all Likes of a particular user
 app.get('/users/:userID/likes/', (req, res, next) => {
+    if(req.params.userID !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
     Likes.getUserLikes(req.params.userID).then((userLikes) => {
         res.status(200).send(userLikes);
     }).catch((err) => {
@@ -291,6 +293,10 @@ app.get('/listings/:listingID/likes/', (req, res, next) => {
 
 // User Likes a Listing (Inserts a like)
 app.post('/likes/', (req, res, next) => {
+    if(req.body.userID !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
     Likes.like(req.body.userID, req.body.fk_liked_listing).then((likeID) => {
         res.status(201).send({"like_id": likeID});
     }).catch((err) => {
@@ -301,6 +307,16 @@ app.post('/likes/', (req, res, next) => {
 
 // Deletes a Like (User unlikes a Listing)
 app.delete('/likes/:like_id/', (req, res, next) => {
+    Likes.getLike(req.params.likeID).then((like) => {
+        const liker = like.fk_liker_id;
+        if(liker !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     Likes.unlike(req.params.like_id).then(() => {
         res.status(204).send();
     }).catch((err) => {
