@@ -89,7 +89,7 @@ const Users = {
             LIMIT 1;
             `;
 
-            db.query(verifyQuery, (err, results) => {
+            db.query(verifyQuery,[username], (err, results) => {
                 if (err) {
                    return reject(err);
                 } 
