@@ -9,7 +9,9 @@ const Users = {
         return new Promise((resolve, reject) => {
             let getAllUsersQuery = 
             `
-            SELECT * FROM Users;
+            SELECT 
+            uuid, username, profile_pic_url, created_at
+            FROM Users;
             `;
 
             db.query(getAllUsersQuery, (err, allUsers) => {
@@ -47,7 +49,9 @@ const Users = {
         return new Promise((resolve, reject) => {
             let getUserQuery = 
             `
-            SELECT * FROM Users
+            SELECT  
+            uuid, username, profile_pic_url, created_at
+            FROM Users
             WHERE
             uuid = ?;
             `;
