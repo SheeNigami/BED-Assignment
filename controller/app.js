@@ -53,7 +53,12 @@ app.get('/users/:id/',  (req, res, next) => {
 
 // 4) Update single User
 app.put('/users/:id/', isLoggedInMiddleware, (req, res, next) => {
-    Users.updateUser(req.params.id, req.body.username, req.body.profile_pic_url).then(() => {
+    const userID = req.params.id;
+    if (userID !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
+    Users.updateUser(userID, req.body.username, req.body.profile_pic_url).then(() => {
         res.status(204).send();
     }).catch((err) => {
         if (err.code == 'ER_DUP_ENTRY') {
@@ -157,14 +162,14 @@ app.post('/login/', (req, res, next) => {
                     return reject();
                 }
                 
-                const payload = {user_id: user.id};
+                const payload = {user_id: user.uuid};
                 jwt.sign(payload, JWT_SECRET, { algorithm: "HS256" }, (error, token) => {
                     if (error) {
                         return reject(error);
                     }
                    resolve({
                        token: token,
-                       user_id: user.id
+                       user_id: user.uuid
                    });
                 });
             });
