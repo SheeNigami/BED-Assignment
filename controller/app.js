@@ -218,7 +218,16 @@ app.post('/login/', (req, res, next) => {
 // Bonus (Image upload/storage)
 
 // Upload single img
-app.post('/listings/:listing_id/single/', upload.single('product_img'), (req, res, next) => {
+app.post('/listings/:listing_id/single/', isLoggedInMiddleware, upload.single('product_img'), (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then((listing) => {
+        if(listing.uuid !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     try {
         res.send(req.file);
     } catch(err) {
@@ -227,7 +236,7 @@ app.post('/listings/:listing_id/single/', upload.single('product_img'), (req, re
 });
 
 // Upload multiple imgs
-app.post('/listings/:listing_id/multi/', upload.array('product_imgs', 4), (req, res, next) => {
+app.post('/listings/:listing_id/multi/', isLoggedInMiddleware, upload.array('product_imgs', 4), (req, res, next) => {
     Listings.getListing(req.params.listing_id).then((listing) => {
         if(listing.uuid !== req.decodedToken.user_id) {
             res.status(403).send();
@@ -246,15 +255,6 @@ app.post('/listings/:listing_id/multi/', upload.array('product_imgs', 4), (req, 
 
 // Get specific image
 app.get('/listings/:listing_id/images/:image_id/', (req, res, next) => {
-    Listings.getListing(req.params.listing_id).then((listing) => {
-        if(listing.uuid !== req.decodedToken.user_id) {
-            res.status(403).send();
-            return;
-        }
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).send();
-    });
     try {
         res.status(200).sendFile(req.params.listing_id + '/' + req.params.image_id + '.jpg', {root: './product_imgs'});
     } catch(err) {
@@ -286,7 +286,7 @@ app.get('/likes/:likeID', (req, res, next) => {
 });
 
 // Gets all Likes of a particular user
-app.get('/users/:userID/likes/', (req, res, next) => {
+app.get('/users/:userID/likes/', isLoggedInMiddleware, (req, res, next) => {
     if(req.params.userID !== req.decodedToken.user_id) {
         res.status(403).send();
         return;
@@ -310,7 +310,7 @@ app.get('/listings/:listingID/likes/', (req, res, next) => {
 });
 
 // User Likes a Listing (Inserts a like)
-app.post('/likes/', (req, res, next) => {
+app.post('/likes/', isLoggedInMiddleware, (req, res, next) => {
     if(req.body.userID !== req.decodedToken.user_id) {
         res.status(403).send();
         return;
@@ -324,7 +324,7 @@ app.post('/likes/', (req, res, next) => {
 });
 
 // Deletes a Like (User unlikes a Listing)
-app.delete('/likes/:like_id/', (req, res, next) => {
+app.delete('/likes/:like_id/', isLoggedInMiddleware, (req, res, next) => {
     Likes.getLike(req.params.likeID).then((like) => {
         const liker = like[0].fk_liker_id;
         if(liker !== req.decodedToken.user_id) {
