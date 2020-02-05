@@ -3,6 +3,7 @@ var express = require('express');
 var app = express();
 
 // Packages
+var path = require('path')
 var jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -20,6 +21,10 @@ var Listings = require('../model/listings.js');
 var Offers = require('../model/offers.js');
 var Likes = require('../model/likes.js');
 var upload = require('../model/imageUploads.js');
+
+app.get("/", (req, res) => {
+  res.sendFile(path.resolve("index.html"));
+});
 
 // 1) Get all Users
 app.get('/users/', (req, res, next) => {
