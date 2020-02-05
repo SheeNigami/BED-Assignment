@@ -2,12 +2,17 @@
 var express = require('express');
 var app = express();
 
-// Middlewares
+// Packages
+var jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET;
+
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({extended: false});
 app.use(bodyParser.json());
 app.use(urlencodedParser);
 
+//Middleware
+var isLoggedInMiddleware = require('../isLoggedInMiddleware.js');
 
 // Models 
 var Users = require('../model/users.js');
@@ -28,7 +33,7 @@ app.get('/users/', (req, res, next) => {
 
 // 2) Add new User
 app.post('/users/', (req, res, next) => {
-    Users.insertUser(req.body.username, req.body.profile_pic_url).then((insertedID) => {
+    Users.insertUser(req.body.username, req.body.password, req.body.profile_pic_url).then((insertedID) => {
         res.status(201).send({"UserID": insertedID});
     }).catch((err) => {
         console.log(err);
@@ -47,8 +52,13 @@ app.get('/users/:id/',  (req, res, next) => {
 });
 
 // 4) Update single User
-app.put('/users/:id/', (req, res, next) => {
-    Users.updateUser(req.params.id, req.body.username, req.body.profile_pic_url).then(() => {
+app.put('/users/:id/', isLoggedInMiddleware, (req, res, next) => {
+    const userID = req.params.id;
+    if (userID !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
+    Users.updateUser(userID, req.body.username, req.body.profile_pic_url).then(() => {
         res.status(204).send();
     }).catch((err) => {
         if (err.code == 'ER_DUP_ENTRY') {
@@ -91,8 +101,9 @@ app.get('/listings/:listing_id', (req, res, next) => {
 });
 
 // 8) Add a new Listing
-app.post('/listings/', (req, res, next) => {
-    Listings.insertListing(req.body.title, req.body.description, parseFloat(req.body.price), req.body.fk_poster_id).then((insertedListingID) => {
+app.post('/listings/', isLoggedInMiddleware, (req, res, next) => {
+    const poster = req.decodedToken.user_id;
+    Listings.insertListing(req.body.title, req.body.description, parseFloat(req.body.price), poster).then((insertedListingID) => {
         res.status(201).send({'listingID': insertedListingID});
     }).catch((err) => {
         console.log(err);
@@ -101,7 +112,16 @@ app.post('/listings/', (req, res, next) => {
 });
 
 // 9) Delete a particular Listing
-app.delete('listings/:id/', (req, res, next) => {
+app.delete('listings/:id/', isLoggedInMiddleware, (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then( (listing) => {
+        if(listing.fk_seller_id !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     Listings.deleteListing(req.params.id).then(() => {
         res.status(204).send();
     }).catch((err) => {
@@ -111,7 +131,16 @@ app.delete('listings/:id/', (req, res, next) => {
 });
 
 // 10) Update a Listing
-app.put('/listings/:id/', (req, res, next) => {
+app.put('/listings/:id/', isLoggedInMiddleware, (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then( (listing) => {
+        if(listing.fk_seller_id !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     Listings.updateListing(req.params.id, req.body.title, req.body.description, parseFloat(req.body.price), req.body.fk_poster_id).then(() => {
         res.status(204).send();
     }).catch((err) => {
@@ -121,7 +150,16 @@ app.put('/listings/:id/', (req, res, next) => {
 });
 
 // 11) Get all offer of a particular Listing
-app.get('/listings/:id/offers/', (req, res, next) => {
+app.get('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
+    Listings.getListing(req.params.id).then( (listing) => {
+        if(listing.fk_seller_id !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     Offers.getListingOffers(req.params.id).then((allListingOffers) => {
         res.status(200).send(allListingOffers);
     }).catch((err) => {
@@ -131,8 +169,13 @@ app.get('/listings/:id/offers/', (req, res, next) => {
 });
 
 // 12) Inserts an offer for a particular Listing
-app.post('/listings/:id/offers/', (req, res, next) => {
-    Offers.insertOffer(req.params.id, parseFloat(req.body.offer), req.body.fk_offeror_id).then((offerID) => {
+app.post('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
+    let offeror = req.body.fk_offeror_id;
+    if (offeror !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
+    Offers.insertOffer(req.params.id, parseFloat(req.body.offer), offeror).then((offerID) => {
         res.status(201).send({"offerID": offerID});
     }).catch((err) => {
         console.log(err);
@@ -140,10 +183,51 @@ app.post('/listings/:id/offers/', (req, res, next) => {
     });
 });
 
+
+// CA2
+
+// Login
+app.post('/login/', (req, res, next) => {
+    Users.verify(req.body.username, req.body.password).then(
+        function (user) {
+            return new Promise((resolve, reject) => {
+                if (user === null) {
+                    return reject();
+                }
+                
+                const payload = {user_id: user.uuid};
+                jwt.sign(payload, JWT_SECRET, { algorithm: "HS256" }, (error, token) => {
+                    if (error) {
+                        return reject(error);
+                    }
+                   resolve({
+                       token: token,
+                       user_id: user.uuid
+                   });
+                });
+            });
+        }.bind(this)
+    ).then((token) => {
+        res.status(200).send(token);
+    }).catch((err) => {
+        console.log(err);
+        res.status(401).send();
+    });
+});
+
 // Bonus (Image upload/storage)
 
 // Upload single img
-app.post('/listings/:listing_id/single/', upload.single('product_img'), (req, res, next) => {
+app.post('/listings/:listing_id/single/', isLoggedInMiddleware, upload.single('product_img'), (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then((listing) => {
+        if(listing.uuid !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     try {
         res.send(req.file);
     } catch(err) {
@@ -152,7 +236,16 @@ app.post('/listings/:listing_id/single/', upload.single('product_img'), (req, re
 });
 
 // Upload multiple imgs
-app.post('/listings/:listing_id/multi/', upload.array('product_imgs', 4), (req, res, next) => {
+app.post('/listings/:listing_id/multi/', isLoggedInMiddleware, upload.array('product_imgs', 4), (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then((listing) => {
+        if(listing.uuid !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     try {
         res.send(req.files);
     } catch(err) {
@@ -193,7 +286,11 @@ app.get('/likes/:likeID', (req, res, next) => {
 });
 
 // Gets all Likes of a particular user
-app.get('/users/:userID/likes/', (req, res, next) => {
+app.get('/users/:userID/likes/', isLoggedInMiddleware, (req, res, next) => {
+    if(req.params.userID !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
     Likes.getUserLikes(req.params.userID).then((userLikes) => {
         res.status(200).send(userLikes);
     }).catch((err) => {
@@ -213,7 +310,11 @@ app.get('/listings/:listingID/likes/', (req, res, next) => {
 });
 
 // User Likes a Listing (Inserts a like)
-app.post('/likes/', (req, res, next) => {
+app.post('/likes/', isLoggedInMiddleware, (req, res, next) => {
+    if(req.body.userID !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
     Likes.like(req.body.userID, req.body.fk_liked_listing).then((likeID) => {
         res.status(201).send({"like_id": likeID});
     }).catch((err) => {
@@ -223,7 +324,17 @@ app.post('/likes/', (req, res, next) => {
 });
 
 // Deletes a Like (User unlikes a Listing)
-app.delete('/likes/:like_id/', (req, res, next) => {
+app.delete('/likes/:like_id/', isLoggedInMiddleware, (req, res, next) => {
+    Likes.getLike(req.params.likeID).then((like) => {
+        const liker = like[0].fk_liker_id;
+        if(liker !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
     Likes.unlike(req.params.like_id).then(() => {
         res.status(204).send();
     }).catch((err) => {

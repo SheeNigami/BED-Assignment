@@ -1,12 +1,17 @@
 var db = require('./databaseConfig.js');
 var uuid = require('uuid/v4');
 
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 const Users = {
     getAllUsers: function() {
         return new Promise((resolve, reject) => {
             let getAllUsersQuery = 
             `
-            SELECT * FROM Users;
+            SELECT 
+            uuid, username, profile_pic_url, created_at
+            FROM Users;
             `;
 
             db.query(getAllUsersQuery, (err, allUsers) => {
@@ -17,21 +22,26 @@ const Users = {
             });
         });
     },
-    insertUser: function(username, profilePicURL) {
+    insertUser: function(username, password, profilePicURL) {
         return new Promise((resolve, reject) => {
             let insertUserQuery = 
             `
             INSERT INTO Users
-            (uuid, username, profile_pic_url)
+            (uuid, username, password, profile_pic_url)
             VALUES
-            (?, ?, ?);
+            (?, ?, ?, ?);
             `;
             const userID = uuid();
-            db.query(insertUserQuery, [userID, username, profilePicURL], (err, insertedInfo) => {
+            bcrypt.hash(password, saltRounds, (err, hashedPw) => {
                 if (err) {
                     return reject(err);
                 }
-                resolve(userID);
+                db.query(insertUserQuery, [userID, username, hashedPw, profilePicURL], (err, insertedInfo) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(userID);
+                });
             });
         });
     },
@@ -39,7 +49,9 @@ const Users = {
         return new Promise((resolve, reject) => {
             let getUserQuery = 
             `
-            SELECT * FROM Users
+            SELECT  
+            uuid, username, profile_pic_url, created_at
+            FROM Users
             WHERE
             uuid = ?;
             `;
@@ -65,11 +77,47 @@ const Users = {
 
             db.query(updateUserQuery, [username, profilePicURL, userID], (err) => {
                 if (err) {
-                    reject(err);
+                    return reject(err);
                 }
                 resolve(true);
             });
         });
+    },
+    verify: function(username, password) {
+        return new Promise((resolve, reject) => {
+            let verifyQuery = 
+            `
+            SELECT * FROM Users
+            WHERE
+            username = ? 
+            LIMIT 1;
+            `;
+
+            db.query(verifyQuery,[username], (err, results) => {
+                if (err) {
+                   return reject(err);
+                } 
+                if (results.length == 0) {
+                   return reject();
+                }
+                resolve(results);
+            });
+        }).then(
+            function (results) {
+                return new Promise((resolve, reject) =>  {
+                    const user = results[0];
+                    bcrypt.compare(password, user.password, (err, compareResults) =>  {
+                        if (err) {
+                            return reject(err);
+                        }
+                        if (!compareResults) {
+                            return reject();
+                        }
+                        resolve(user);
+                    });
+                });
+            }.bind(this)
+        );
     }
 };
 
