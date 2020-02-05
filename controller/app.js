@@ -3,7 +3,7 @@ var express = require('express');
 var app = express();
 
 // Packages
-var path = require('path')
+var path = require('path');
 var jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 
