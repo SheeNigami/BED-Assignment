@@ -18,16 +18,14 @@
         <h1 class="my-4">Snapsell</h1>
         <div class="row">
             <div class="col-lg-3">
-                <div class="list-group">
-                    <h3>Offers</h3>
-                    <p class="list-group-item text-primary">Category 1</p>
-                    <p class="list-group-item text-primary">Category 2</p>
-                    <p class="list-group-item text-primary">Category 3</p>
+                <div class="list-group", id="offers">
+                    <h3 class="mb-5">Offers</h3>
+                    <!-- Offers to be appended here -->
                 </div>
             </div>
             
             <div class="col-lg-9">
-                <h2 class="mb-4">Listings</h2>
+                <h2 class="mb-4">My Listings</h2>
                 <div class="row", id="my-listings">
                     <!-- Listings appended here -->
                 </div>
@@ -86,7 +84,40 @@
                     console.log('Error', error.message);
                 }
             });
+
+        axios.get(`${baseUrl}/users/${loggedInUserID}/offers/`,
+        {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+            .then((response) => {
+                offers = response.data;
+                offers.forEach(offer => {
+                    const offerHtml = `
+                    <p class="list-group-item text-primary"><b>${offer.username}</b> offered <b>$${offer.offer}</b> for <b>"${offer.title}"</b></p>
+                    `
+                    
+                    $("#offers").append(offerHtml);
+                });
+            })
+            .catch((error) => {
+                if (error.response) {
+                    // Request made and server responded
+                    console.log(error.response.data);
+                    console.log(error.response.status);
+                    console.log(error.response.headers);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    console.log(error.request);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message);
+                }
+            });
     }
+
+
 
     $("#logout").click((event) => {
         localStorage.removeItem("token");

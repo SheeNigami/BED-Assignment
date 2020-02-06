@@ -18,17 +18,22 @@ const Offers = {
             });
         });
     },
-    getUserOffers: function(userID) {
+    getUserListingsOffers: function(userID) {
         return new Promise((resolve, reject) => {
             let getUserOffersQuery = 
             `
-            SELECT * FROM Offers
+            SELECT 
+            Offers.offer, Listings.title, Users.username
+            FROM 
+            Offers
+            INNER JOIN Listings ON Listings.uuid = Offers.fk_listing_id
+            INNER JOIN Users ON Users.uuid = Offers.fk_offerer_userid
             WHERE
-            fk_offerer_userid = ?;
+            fk_seller_id = ?;
             `;
             db.query(getUserOffersQuery, [userID], (err, userOffers) => {
                 if (err) {
-                    return reject(err)
+                    return reject(err);
                 }
                 resolve(userOffers);
             });

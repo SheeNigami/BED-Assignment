@@ -162,6 +162,22 @@ app.put('/listings/:id/', isLoggedInMiddleware, (req, res, next) => {
     });
 });
 
+// Added: Get all offer of a particular Users Listings
+app.get('/users/:id/offers/', isLoggedInMiddleware, (req,res,next) => {
+    const requestedUser = req.params.id;
+    if (requestedUser !== req.decodedToken.user_id) {
+        res.status(403).send();
+        return;
+    }
+    Offers.getUserListingsOffers(requestedUser).then((usersOffers) => {
+        res.status(200).send(usersOffers);
+    }).catch((err) => {
+        console.log(err);
+       res.status(500).send();
+    });
+});
+
+
 // 11) Get all offer of a particular Listing
 app.get('/listings/:id/offers/', isLoggedInMiddleware, (req, res, next) => {
     Listings.getListing(req.params.id).then( (listing) => {
