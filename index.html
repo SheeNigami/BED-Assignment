@@ -7,29 +7,33 @@
 </head>
 <body>
     <div class="container">
-        <div class="container">
         <nav class="nav">
             <a class="nav-link active" href="/">Home</a>
-            <a class="nav-link", href="/profile/">Search</a>
-            <a class="nav-link", href="/profile/">Sell</a>
-            <a class="nav-link btn-danger text-white">Log Out</a>
+            <a class="nav-link", href="/search/">Search</a>
+            <a class="nav-link", href="/sell/">Sell</a>
+            <btn class="nav-link btn-danger text-white", type="button", id='logout'>Log Out</btn>
         </nav>
-    
-        <div style="margin-top: 2rem;">
-            <h1>Home</h1>
-
-            <form id="create-post-form" style="margin-top: 2rem;">
-                <div class="form-group">
-                    <textarea class="form-control" id="create-post-form-body" rows="3" placeholder="What's on your mind?"></textarea>
+    </div>
+    <div class="container">
+        <h1 class="my-4">Snapsell</h1>
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="list-group">
+                    <h3>Offers</h3>
+                    <p class="list-group-item text-primary">Category 1</p>
+                    <p class="list-group-item text-primary">Category 2</p>
+                    <p class="list-group-item text-primary">Category 3</p>
                 </div>
-                <button type="submit" class="btn btn-primary">Create Post</button>
-            </form>
-
-            <div id="posts">
-
+            </div>
+            
+            <div class="col-lg-9">
+                <h2 class="mb-4">Listings</h2>
+                <div class="row", id="my-listings">
+                    <!-- Listings appended here -->
+                </div>
             </div>
         </div>
-    </div>
+    </div> 
     <script
         src="https://code.jquery.com/jquery-3.3.1.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -47,28 +51,51 @@
     } else {
         axios.get(`${baseUrl}/users/${loggedInUserID}/listings/`)
             .then((response) => {
-                const posts = response.data;
-                posts.forEach((post) => {
-                    const postHtml = `
-                    <div class="card" style="margin-top: 2rem;">
-                        <div class="card-body">
-                            <p class="card-text">${post.title}</p>
+                const listings = response.data;
+                listings.forEach((listing) => {
+                    const listingHtml = `
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100">
+                                <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
+                                <div class="card-body">
+                                    <h4 class="card-title text-primary">${listing.title}</h4>
+                                    <h5>$${listing.price}</h5>
+                                    <p class="card-text">${listing.description}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-footer text-muted">
-                            ${post.created_at}
-                        </div>
-                    </div>
                     `;
                     
-                    $("#posts").append(postHtml);
+                    $("#my-listings").append(listingHtml);
                 });
             })
             .catch((error) => {
-                console.log(error.response);
+                if (error.response) {
+                    // Request made and server responded
+                    console.log(error.response.data);
+                    console.log(error.response.status);
+                    console.log(error.response.headers);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    console.log(error.request);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message);
+                }
             });
     }
 
-    // hardcoded because we have not added login yet.
+    $("#logout").click((event) => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("loggedInUserID")
+
+        window.location.href = `${baseUrl}/login/`;
+    })
+
     </script>
 </body>
+
 </html>

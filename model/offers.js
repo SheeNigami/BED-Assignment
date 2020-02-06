@@ -18,6 +18,22 @@ const Offers = {
             });
         });
     },
+    getUserOffers: function(userID) {
+        return new Promise((resolve, reject) => {
+            let getUserOffersQuery = 
+            `
+            SELECT * FROM Offers
+            WHERE
+            fk_offerer_userid = ?;
+            `;
+            db.query(getUserOffersQuery, [userID], (err, userOffers) => {
+                if (err) {
+                    return reject(err)
+                }
+                resolve(userOffers);
+            });
+        });
+    },
     insertOffer: function(listingID, offer, offererUserID) {
         return new Promise((resolve, reject) => {
             let insertOfferQuery = 
