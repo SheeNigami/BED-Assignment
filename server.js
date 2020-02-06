@@ -6,8 +6,5 @@ var app = require('./controller/app.js');
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-    if (process.send) {
-        process.send(process.send({ event:'online', url:'http://localhost:3301' }));
-    }
     console.log("App hosted at localhost: " + PORT);
 });

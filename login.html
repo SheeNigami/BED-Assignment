@@ -11,12 +11,8 @@
     <div class="container">
         <nav class="nav">
             <a class="nav-link" href="/">Home</a>
-            <a class="nav-link" href="/users/">All Users</a>
         </nav>
-
-        <h1>Login</h1>
-        <p>Don't have an account?</p>
-        <a href="/register/" class="btn btn-primary">Register</a>
+        <h1 class="my-3">Login</h1>
         <form id="login-form">
             <div class="form-group">
                 <label for="username">Username</label>
@@ -28,6 +24,9 @@
             </div>
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
+
+        <p class="mt-5">Don't have an account?</p>
+        <a href="/register/" class="btn btn-primary">Register</a>
     </div>
     <script
     src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -37,29 +36,44 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
-        const baseUrl = "http://localhost:3000";
+        const baseUrl = "http://localhost:3301";
+        const token = localStorage.getItem("token");
+        const loggedInUserID = parseInt(localStorage.getItem("loggedInUserID"));
+
         $("#login-form").submit((event) => {
-            // prevent page reload
-            event.preventDefault();
+        // prevent page reload
+        event.preventDefault();
 
-            const username = $("#username").val();
-            const password = $("#password").val();
-            const requestBody = {
-                username: username,
-                password: password
-            };
+        const username = $("#username").val();
+        const password = $("#password").val();
+        const requestBody = {
+            username: username,
+            password: password
+        };
 
-            axios.post(`${baseUrl}/login/`, requestBody)
-                .then((response) => {
-                    const token = response.data.token;
-                    const loggedInUserID = response.data.user_id;
-                    localStorage.setItem("token", token);
-                    localStorage.setItem("loggedInUserID", loggedInUserID);
-                    window.location.href = "/";
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+        axios.post(`${baseUrl}/login/`, requestBody)
+            .then((response) => {
+                console.log('Here');
+                const token = response.data.token;
+                const loggedInUserID = response.data.user_id;
+                localStorage.setItem("token", token);
+                localStorage.setItem("loggedInUserID", loggedInUserID);
+                window.location.href = `${baseUrl}/`;
+            })
+            .catch((error) => {
+                if (error.response) {
+                    // Request made and server responded
+                    if (error.response.status == 401) {
+                        alert("You have entered an invalid username or password");
+                    }
+                } else if (error.request) {
+                // The request was made but no response was received
+                    console.log(error.request);
+                } else {
+                // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message);
+                }
+            });
         });
     </script>
 </body>

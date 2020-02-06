@@ -30,6 +30,10 @@ app.get("/login/",  (req,res) => {
     res.sendFile(path.resolve("login.html"));
 });
 
+app.get("/register/", (req,res) => {
+    res.sendFile(path.resolve('register.html'));
+});
+
 // 1) Get all Users
 app.get('/users/', (req, res, next) => {
     Users.getAllUsers().then((allUsers) => {

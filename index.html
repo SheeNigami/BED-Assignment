@@ -36,34 +36,37 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
-
     const baseUrl = "http://localhost:3301";
-    // const baseUrl = "http://localhost:8080";
-    // hardcoded because we have not added login yet.
-    const loggedInUserID = '1aace665-be8b-4203-92f4-069b85e3f1e6';
+    const token = localStorage.getItem("token");
+    const loggedInUserID = localStorage.getItem("loggedInUserID");
 
-    axios.get(`${baseUrl}/users/${loggedInUserID}/listings/`)
-        .then((response) => {
-            const posts = response.data;
-            posts.forEach((post) => {
-                const postHtml = `
-                <div class="card" style="margin-top: 2rem;">
-                    <div class="card-body">
-                        <p class="card-text">${post.title}</p>
+    if (token === null) {
+        window.location.href = "/login/";
+    } else {
+        axios.get(`${baseUrl}/users/${loggedInUserID}/listings/`)
+            .then((response) => {
+                const posts = response.data;
+                posts.forEach((post) => {
+                    const postHtml = `
+                    <div class="card" style="margin-top: 2rem;">
+                        <div class="card-body">
+                            <p class="card-text">${post.title}</p>
+                        </div>
+                        <div class="card-footer text-muted">
+                            ${post.created_at}
+                        </div>
                     </div>
-                    <div class="card-footer text-muted">
-                        ${post.created_at}
-                    </div>
-                </div>
-                `;
-                
-                $("#posts").append(postHtml);
+                    `;
+                    
+                    $("#posts").append(postHtml);
+                });
+            })
+            .catch((error) => {
+                console.log(error.response);
             });
-        })
-        .catch((error) => {
-            console.log(error);
-        });
+    }
+
+    // hardcoded because we have not added login yet.
     </script>
-    <script src="{process.env.BROWSER_REFRESH_URL}"></script>
 </body>
 </html>
