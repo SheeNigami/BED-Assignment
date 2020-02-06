@@ -37,43 +37,40 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
         const baseUrl = "http://localhost:3301";
-        const token = localStorage.getItem("token");
-        const loggedInUserID = parseInt(localStorage.getItem("loggedInUserID"));
 
         $("#login-form").submit((event) => {
-        // prevent page reload
-        event.preventDefault();
+            // prevent page reload
+            event.preventDefault();
 
-        const username = $("#username").val();
-        const password = $("#password").val();
-        const requestBody = {
-            username: username,
-            password: password
-        };
+            const username = $("#username").val();
+            const password = $("#password").val();
+            const requestBody = {
+                username: username,
+                password: password
+            };
 
-        axios.post(`${baseUrl}/login/`, requestBody)
-            .then((response) => {
-                console.log('Here');
-                const token = response.data.token;
-                const loggedInUserID = response.data.user_id;
-                localStorage.setItem("token", token);
-                localStorage.setItem("loggedInUserID", loggedInUserID);
-                window.location.href = `${baseUrl}/`;
-            })
-            .catch((error) => {
-                if (error.response) {
-                    // Request made and server responded
-                    if (error.response.status == 401) {
-                        alert("You have entered an invalid username or password");
+            axios.post(`${baseUrl}/login/`, requestBody)
+                .then((response) => {
+                    const token = response.data.token;
+                    const loggedInUserID = response.data.user_id;
+                    localStorage.setItem("token", token);
+                    localStorage.setItem("loggedInUserID", loggedInUserID);
+                    window.location.href = `${baseUrl}/`;
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        // Request made and server responded
+                        if (error.response.status == 401) {
+                            alert("You have entered an invalid username or password");
+                        }
+                    } else if (error.request) {
+                    // The request was made but no response was received
+                        console.log(error.request);
+                    } else {
+                    // Something happened in setting up the request that triggered an Error
+                        console.log('Error', error.message);
                     }
-                } else if (error.request) {
-                // The request was made but no response was received
-                    console.log(error.request);
-                } else {
-                // Something happened in setting up the request that triggered an Error
-                    console.log('Error', error.message);
-                }
-            });
+                });
         });
     </script>
 </body>
