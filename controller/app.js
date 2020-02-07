@@ -34,6 +34,10 @@ app.get("/register/", (req,res) => {
     res.sendFile(path.resolve('register.html'));
 });
 
+app.get("/search/", (req,res) => {
+    res.sendFile(path.resolve('search.html'));
+});
+
 // 1) Get all Users
 app.get('/users/', (req, res, next) => {
     Users.getAllUsers().then((allUsers) => {
@@ -104,9 +108,20 @@ app.get('/listings/', (req, res, next) => {
 });
 
 // 7) Get single Listing by ID
-app.get('/listings/:listing_id', (req, res, next) => {
-    Listings.getListing(req.params.listing_id).then((listing) => {
-        res.status(200).send(listing[0]);
+// app.get('/listings/:listing_id', (req, res, next) => {
+//     console.log('wrong again');
+//     Listings.getListing(req.params.listing_id).then((listing) => {
+//         res.status(200).send(listing[0]);
+//     }).catch((err) => {
+//         console.log(err);
+//         res.status(500).send();
+//     });
+// });
+
+// Added: Search Listings by Name
+app.get('/listings/search', (req,res,next) => {
+    Listings.searchListingsByName(req.query.listing_name).then((listings) => {
+        res.status(200).send(listings);
     }).catch((err) => {
         console.log(err);
         res.status(500).send();

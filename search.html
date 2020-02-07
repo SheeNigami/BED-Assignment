@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Friendbook</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a class="nav-link active" href="/">Home</a>
+            <a class="nav-link", href="/search/">Search</a>
+            <a class="nav-link", href="/sell/">Sell</a>
+            <btn class="nav-link btn-danger text-white", type="button", id='logout'>Log Out</btn>
+        </nav>
+    </div>
+    <div class="container px-5">
+        <h1 class="my-4">Search</h1>
+        <div class="row mb-5", id="login-form">
+            <input type="text" class="form-control col-md-10" id="search", placeholder="IPhone">
+            <button type="button" class="btn btn-primary col-md-2" id='search-btn'>Search</button>
+        </div>
+        <div class="container">
+            <div class="row", id="listings">
+                <!-- Listings to be appended here -->
+                <!-- All Listings default, after search filter -->
+            </div>
+        </div>
+    </div>
+    <script
+    src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script>
+        const baseUrl = "http://localhost:3301";
+        const token = localStorage.getItem("token");
+        const loggedInUserID = localStorage.getItem("loggedInUserID");
+
+        if (token === null) {
+            window.location.href = "/login/"
+        } else {
+            axios.get('/listings/').then((response) => {
+                const allListings = response.data;
+                allListings.forEach(listing => {
+                    const listingsHtml = `
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100">
+                                <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
+                                <div class="card-body">
+                                    <h4 class="card-title text-primary">${listing.title}</h4>
+                                    <h5>Price: $${listing.price}</h5>
+                                    <p class="card-text">${listing.description}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#offerModal">Offer</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Modal -->
+                        <div id="offerModal" class="modal fade" role="dialog">
+                        <div class="modal-dialog">
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Offer</h4>
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="text" class="form-control" id="input-offer-${listing.uuid}", placeholder="${listing.price}">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-success btn-large offer" data-dismiss="modal", id=${listing.uuid}>Offer</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    $('#listings').append(listingsHtml);
+                });
+                $('button.offer').click((event) => {
+                    const listingId = event.target.id;
+                    const inputOffer = $(`#input-offer-${listingId}`).val();
+                    if (!(inputOffer === null || inputOffer === ""|| isNaN(inputOffer))) {
+                        const reqBody = {
+                            "offer": parseFloat(inputOffer),
+                            "fk_offeror_id": loggedInUserID
+                        }
+                        axios.post(`/listings/${listingId}/offers/`, reqBody, {
+                            headers: {
+                                "Authorization": "Bearer " + token
+                            }
+                        }).then((response) => {
+                            alert("Your offer has been successfully made!");
+                        }).catch((error) => {
+                            if (error.response) {
+                                // Request made and server responded
+                                console.log(error.response.data);
+                                console.log(error.response.status);
+                                console.log(error.response.headers);
+                            } else if (error.request) {
+                                // The request was made but no response was received
+                                console.log(error.request);
+                            } else {
+                                // Something happened in setting up the request that triggered an Error
+                                console.log('Error', error.message);
+                            }
+                        });
+                    } else {
+                        alert("You entered an invalid Offer. Please try again with only numbers.")
+                    }
+                });
+            }).catch((error) => {
+                if (error.response) {
+                    // Request made and server responded
+                    console.log(error.response.data);
+                    console.log(error.response.status);
+                    console.log(error.response.headers);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    console.log(error.request);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message);
+                }
+            });
+        }
+
+        $('#search-btn').click((event) => {
+            // Destroy allListings default appended
+            $('#listings').empty();
+            
+            searchString = $("#search").val();
+            axios.get('/listings/search', {
+                params: {
+                    listing_name: searchString
+                }
+            }).then((response) => {
+                const matchedListings = response.data
+                console.log(matchedListings);
+                matchedListings.forEach(listing => {
+                    const searchedHtml = `
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100">
+                                <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
+                                <div class="card-body">
+                                    <h4 class="card-title text-primary">${listing.title}</h4>
+                                    <h5>Price: $${listing.price}</h5>
+                                    <p class="card-text">${listing.description}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <button type="button" class="btn btn-success offer", id="${listing.uuid}">Offer</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    $('#listings').append(searchedHtml);
+                });
+            }).catch((error) => {
+                if (error.response) {
+                    // Request made and server responded
+                    if (error.response.status == 401) {
+                        alert("You have entered an invalid username or password");
+                    }
+                } else if (error.request) {
+                // The request was made but no response was received
+                    console.log(error.request);
+                } else {
+                // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message);
+                }
+            });
+        });
+        
+
+        $("#logout").click((event) => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("loggedInUserID")
+
+            window.location.href = `${baseUrl}/login/`;
+        });
+    </script>
+</body>
+</html>

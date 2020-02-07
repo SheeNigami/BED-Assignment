@@ -51,6 +51,23 @@ const Listings = {
             });
         });
     },
+    searchListingsByName: function(searchString) {
+        return new Promise((resolve, reject) => {
+            let searchListingsByNameQuery = 
+            `
+            SELECT * FROM Listings
+            WHERE 
+            title LIKE ?;
+            `;
+            searchString = '%' + searchString + '%';
+            db.query(searchListingsByNameQuery, [searchString], (err, listings) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(listings);
+            });
+        });
+    },
     insertListing: function(title, desc, price, sellerID) {
         return new Promise((resolve, reject) => {
             let insertListingQuery = 
