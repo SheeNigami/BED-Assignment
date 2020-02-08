@@ -41,6 +41,10 @@ app.get("/search/", (req,res) => {
     res.sendFile(path.resolve('search.html'));
 });
 
+app.get("/sell/", (req, res) => {
+    res.sendFile(path.resolve("sell.html"));
+});
+
 // 1) Get all Users
 app.get('/users/', (req, res, next) => {
     Users.getAllUsers().then((allUsers) => {
