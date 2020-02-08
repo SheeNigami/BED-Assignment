@@ -111,15 +111,15 @@ app.get('/listings/', (req, res, next) => {
 });
 
 // 7) Get single Listing by ID
-app.get('/listings/:listing_id', (req, res, next) => {
-    console.log('wrong again');
-    Listings.getListing(req.params.listing_id).then((listing) => {
-        res.status(200).send(listing[0]);
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).send();
-    });
-});
+// app.get('/listings/:listing_id', (req, res, next) => {
+//     console.log('wrong again');
+//     Listings.getListing(req.params.listing_id).then((listing) => {
+//         res.status(200).send(listing[0]);
+//     }).catch((err) => {
+//         console.log(err);
+//         res.status(500).send();
+//     });
+// });
 
 // Added: Search Listings by Name
 app.get('/listings/search', (req,res,next) => {
