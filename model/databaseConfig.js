@@ -1,3 +1,7 @@
+// Name: Yeo Sheen Hern 
+// Admin no. : 1902257
+// Class: DIT/FT/1B/11
+
 var mysql = require('mysql');
 
 const DB_HOST = process.env.DB_HOST;

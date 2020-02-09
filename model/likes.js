@@ -1,3 +1,7 @@
+// Name: Yeo Sheen Hern 
+// Admin no. : 1902257
+// Class: DIT/FT/1B/11
+
 var db = require('./databaseConfig.js');
 var uuid = require('uuid/v4');
 
