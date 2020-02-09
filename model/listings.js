@@ -59,8 +59,8 @@ const Listings = {
             WHERE 
             title LIKE ?;
             `;
-            searchString = '%' + searchString + '%';
-            db.query(searchListingsByNameQuery, [searchString], (err, listings) => {
+            const forSearch = '%' + searchString + '%';
+            db.query(searchListingsByNameQuery, [forSearch], (err, listings) => {
                 if (err) {
                     return reject(err);
                 }

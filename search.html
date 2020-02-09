@@ -104,13 +104,8 @@
             $('#listings').empty();
             
             searchString = $("#search").val();
-            axios.get('/listings/search', {
-                params: {
-                    listing_name: searchString
-                }
-            }).then((response) => {
+            axios.get(`/search/${searchString}`).then((response) => {
                 const matchedListings = response.data
-                console.log(matchedListings);
                 matchedListings.forEach(listing => {
                     const searchedHtml = `
                         <div class="col-lg-4 col-md-6 mb-4">

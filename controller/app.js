@@ -115,19 +115,19 @@ app.get('/listings/', (req, res, next) => {
 });
 
 // 7) Get single Listing by ID
-// app.get('/listings/:listing_id', (req, res, next) => {
-//     console.log('wrong again');
-//     Listings.getListing(req.params.listing_id).then((listing) => {
-//         res.status(200).send(listing[0]);
-//     }).catch((err) => {
-//         console.log(err);
-//         res.status(500).send();
-//     });
-// });
+app.get('/listings/:listing_id', (req, res, next) => {
+    console.log('wrong again');
+    Listings.getListing(req.params.listing_id).then((listing) => {
+        res.status(200).send(listing[0]);
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
+});
 
 // Added: Search Listings by Name
-app.get('/listings/search', (req,res,next) => {
-    Listings.searchListingsByName(req.query.listing_name).then((listings) => {
+app.get('/search/:search_text', (req,res,next) => {
+    Listings.searchListingsByName(req.params.search_text).then((listings) => {
         res.status(200).send(listings);
     }).catch((err) => {
         console.log(err);
@@ -269,7 +269,7 @@ app.post('/login/', (req, res, next) => {
 // Bonus (Image upload/storage)
 
 // Upload single img
-app.post('/listings/:listing_id/single/', isLoggedInMiddleware, upload.single('product_img'), (req, res, next) => {
+app.post('/listings/:listing_id/image/', isLoggedInMiddleware, upload.single('product_img'), (req, res, next) => {
     Listings.getListing(req.params.listing_id).then((listing) => {
         if(listing.uuid !== req.decodedToken.user_id) {
             res.status(403).send();
@@ -287,7 +287,25 @@ app.post('/listings/:listing_id/single/', isLoggedInMiddleware, upload.single('p
 });
 
 // Upload multiple imgs
-app.post('/listings/:listing_id/multi/', isLoggedInMiddleware, upload.array('product_imgs', 4), (req, res, next) => {
+// app.post('/listings/:listing_id/multi/', isLoggedInMiddleware, upload.array('product_imgs', 4), (req, res, next) => {
+//     Listings.getListing(req.params.listing_id).then((listing) => {
+//         if(listing.uuid !== req.decodedToken.user_id) {
+//             res.status(403).send();
+//             return;
+//         }
+//     }).catch((err) => {
+//         console.log(err);
+//         res.status(500).send();
+//     });
+//     try {
+//         res.send(req.files);
+//     } catch(err) {
+//         res.status(500).send(err);
+//     }
+// });
+
+// Get specific image
+app.get('/listings/:listing_id/image/', isLoggedInMiddleware, (req, res, next) => {
     Listings.getListing(req.params.listing_id).then((listing) => {
         if(listing.uuid !== req.decodedToken.user_id) {
             res.status(403).send();
@@ -297,15 +315,6 @@ app.post('/listings/:listing_id/multi/', isLoggedInMiddleware, upload.array('pro
         console.log(err);
         res.status(500).send();
     });
-    try {
-        res.send(req.files);
-    } catch(err) {
-        res.status(500).send(err);
-    }
-});
-
-// Get specific image
-app.get('/listings/:listing_id/images/:image_id/', (req, res, next) => {
     try {
         res.status(200).sendFile(req.params.listing_id + '/' + req.params.image_id + '.jpg', {root: './product_imgs'});
     } catch(err) {

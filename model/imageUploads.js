@@ -12,14 +12,17 @@ var storage = multer.diskStorage({
             if (listings.length == 0) {
                 throw Error;
             } 
-            let productImg = './product_imgs/' + req.params.listing_id;
-            cb(null, productImg);
+            cb(null, './product_imgs/');
         }).catch((err) => {
             cb(err, null);
         });
      },
     filename: function (req, file, cb) {
-        cb(null , uuid() + path.extname(file.originalname));
+        Listings.getListing(req.params.listing_id).then((listings) => {
+            cb(null, listings[0].uuid + path.extname(file.originalname));
+        }).catch((err) => {
+            cb(err, null);
+        });
     }
 });
 var upload = multer({
