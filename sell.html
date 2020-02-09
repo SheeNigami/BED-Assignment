@@ -51,8 +51,8 @@
 
         const title = $("#title").val();
         const price = $("#price").val();
-        const description = $('#desctiption').val();
-        if (!isNaN(price)) {
+        const description = $('#description').val();
+        if (!(isNaN(price) || price == null || title == null)) {
             const requestBody = {
                 title: title,
                 description: description,
@@ -84,7 +84,7 @@
                     }
                 });
         } else{
-            alert("Please enter a valid price");
+            alert("Please enter all the required information.");
         }});
     </script>
 </body>

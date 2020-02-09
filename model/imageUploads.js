@@ -12,13 +12,8 @@ var storage = multer.diskStorage({
             if (listings.length == 0) {
                 throw Error;
             } 
-            let productImgDir = './product_imgs/' + req.params.listing_id;
-            mkdirp(productImgDir, (err) => {
-                if (err) {
-                    cb(err, null);
-                }
-            });
-            cb(null, productImgDir);
+            let productImg = './product_imgs/' + req.params.listing_id;
+            cb(null, productImg);
         }).catch((err) => {
             cb(err, null);
         });
