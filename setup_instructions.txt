@@ -16,24 +16,25 @@ npm i
 
 
 
-2) Next, run the queries in the file 'snapselldump.sql' in your MySQL Terminal/Workbench.
+2) Next, run the queries in the file 'snapsell.sql' in your MySQL Terminal/Workbench.
 
 
 
-3) Lastly, to set up the database connection, navigate to the file '/model/databaseConfig.js'
-   and change the info in this section to your own MySQL user and password:
+3) Lastly, to set up the database connection, navigate to the file '/model/databaseConfig.js' and change the user and password info in .env.development
 
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'BEDUser',    //Change Accordingly
-    password: 'BEDUser1!',    //Change Accordingly
-    database: 'snapsell'    
-});
-
+JWT_SECRET=SECRET-ECKS-dee
+DB_HOST=localhost (CHANGE THIS)
+DB_USER=BEDUser (CHANGE THIS)
+DB_PASSWORD=BEDUser1!
+DB_NAME=snapsell
+PORT=3301
 
 
 
 Start the Server:
 
-Run the 'server.js' file to start the server, API is now up and running.
+Use:
+npm run start-dev
+
+to start the server
