@@ -52,21 +52,17 @@
                 const listings = response.data;
                 listings.forEach((listing) => {
                     const listingHtml = `
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100">
-                                <img class="card-img-top" src="./product_imgs/${listing.uuid}" alt="${listing.title} Picture">
-                                <div class="card-body">
-                                    <h4 class="card-title text-primary">${listing.title}</h4>
-                                    <h5>$${listing.price}</h5>
-                                    <p class="card-text">${listing.description}</p>
-                                </div>
-                                <div class="card-footer">
-                                    <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
-                                </div>
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <img class="card-img-top" src="${listing.image_url}">
+                            <div class="card-body">
+                                <h4 class="card-title text-primary">${listing.title}</h4>
+                                <h5>$${listing.price}</h5>
+                                <p class="card-text">${listing.description}</p>
                             </div>
                         </div>
-                    `;
-                    
+                    </div>
+                    `
                     $("#my-listings").append(listingHtml);
                 });
             })

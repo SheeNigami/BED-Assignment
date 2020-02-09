@@ -68,17 +68,17 @@ const Listings = {
             });
         });
     },
-    insertListing: function(title, desc, price, sellerID) {
+    insertListing: function(title, desc, price, imageUrl, sellerID) { 
         return new Promise((resolve, reject) => {
             let insertListingQuery = 
             `
             INSERT INTO Listings
-            (uuid, title, description, price, fk_seller_id)
+            (uuid, title, description, price, image_url, fk_seller_id)
             VALUES
-            (?, ?, ?, ?, ?);
+            (?, ?, ?, ?, ?, ?);
             `;
             const listingID = uuid();
-            db.query(insertListingQuery, [listingID, title, desc, price, sellerID], (err) => {
+            db.query(insertListingQuery, [listingID, title, desc, price, imageUrl, sellerID], (err) => {
                 if (err) {
                     return reject(err);
                 }

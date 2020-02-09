@@ -13,7 +13,10 @@ app.use(bodyParser.json());
 app.use(urlencodedParser);
 
 var cors = require('cors');
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:3301'],
+    credentials: true
+}));
 
 //Middleware
 var isLoggedInMiddleware = require('../isLoggedInMiddleware.js');
@@ -116,7 +119,6 @@ app.get('/listings/', (req, res, next) => {
 
 // 7) Get single Listing by ID
 app.get('/listings/:listing_id', (req, res, next) => {
-    console.log('wrong again');
     Listings.getListing(req.params.listing_id).then((listing) => {
         res.status(200).send(listing[0]);
     }).catch((err) => {
@@ -138,7 +140,7 @@ app.get('/search/:search_text', (req,res,next) => {
 // 8) Add a new Listing
 app.post('/listings/', isLoggedInMiddleware, (req, res, next) => {
     const poster = req.decodedToken.user_id;
-    Listings.insertListing(req.body.title, req.body.description, parseFloat(req.body.price), poster).then((insertedListingID) => {
+    Listings.insertListing(req.body.title, req.body.description, parseFloat(req.body.price), req.body.image_url, poster).then((insertedListingID) => {
         res.status(201).send({'listingID': insertedListingID});
     }).catch((err) => {
         console.log(err);
@@ -305,18 +307,9 @@ app.post('/listings/:listing_id/image/', isLoggedInMiddleware, upload.single('pr
 // });
 
 // Get specific image
-app.get('/listings/:listing_id/image/', isLoggedInMiddleware, (req, res, next) => {
-    Listings.getListing(req.params.listing_id).then((listing) => {
-        if(listing.uuid !== req.decodedToken.user_id) {
-            res.status(403).send();
-            return;
-        }
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).send();
-    });
+app.get('/listings/:listing_id/image/', (req, res, next) => {
     try {
-        res.status(200).sendFile(req.params.listing_id + '/' + req.params.image_id + '.jpg', {root: './product_imgs'});
+        res.status(200).sendFile(req.params.listing_id + '.jpg', {root: './product_imgs'});
     } catch(err) {
         console.log(err);
         res.status(500).send();

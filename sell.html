@@ -27,6 +27,10 @@
             </div>
             <!-- Might want to include image upload here -->
             <div class="form-group">
+                <label for="price">Image URL</label>
+                <input type="text" class="form-control" id="image-url">
+            </div>
+            <div class="form-group">
                 <label for="description">Description</label>
                 <input type="text" class="form-control" id="description">
             </div>
@@ -51,12 +55,17 @@
 
         const title = $("#title").val();
         const price = $("#price").val();
+        let imageUrl = $("#image-url").val();
         const description = $('#description').val();
+        if (imageUrl == '') {
+            imageUrl = 'http://placehold.it/700x400';
+        }
         if (!(isNaN(price) || price == null || title == null)) {
             const requestBody = {
                 title: title,
                 description: description,
-                price: price
+                price: price,
+                image_url: imageUrl
             };
 
             axios.post(`${baseUrl}/listings/`, requestBody, {
