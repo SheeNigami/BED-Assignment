@@ -293,22 +293,22 @@ app.post('/listings/:listing_id/image/', isLoggedInMiddleware, upload.single('pr
 });
 
 // Upload multiple imgs
-// app.post('/listings/:listing_id/multi/', isLoggedInMiddleware, upload.array('product_imgs', 4), (req, res, next) => {
-//     Listings.getListing(req.params.listing_id).then((listing) => {
-//         if(listing.uuid !== req.decodedToken.user_id) {
-//             res.status(403).send();
-//             return;
-//         }
-//     }).catch((err) => {
-//         console.log(err);
-//         res.status(500).send();
-//     });
-//     try {
-//         res.send(req.files);
-//     } catch(err) {
-//         res.status(500).send(err);
-//     }
-// });
+app.post('/listings/:listing_id/multi/', isLoggedInMiddleware, upload.array('product_imgs', 4), (req, res, next) => {
+    Listings.getListing(req.params.listing_id).then((listing) => {
+        if(listing.uuid !== req.decodedToken.user_id) {
+            res.status(403).send();
+            return;
+        }
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    });
+    try {
+        res.send(req.files);
+    } catch(err) {
+        res.status(500).send(err);
+    }
+});
 
 // Get specific image
 app.get('/listings/:listing_id/image/', (req, res, next) => {
